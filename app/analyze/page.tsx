@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { analyzeResume } from '../lib/analyze/resume'
+import { analyzeResume } from '../lib/analyze/resume' 
 
 export default function AnalyzePage() {
   const [resume, setResume] = useState('')
