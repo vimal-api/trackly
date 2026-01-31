@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isLoggedIn } from "./auth";
+import { supabase } from "./supabase";
 
 export default function RequireAuth({
   children,
@@ -10,12 +10,19 @@ export default function RequireAuth({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoggedIn()) {
-      router.replace("/login");
-    }
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        router.replace("/login");
+      } else {
+        setLoading(false);
+      }
+    });
   }, [router]);
+
+  if (loading) return null; // ⬅️ prevents flicker + loop
 
   return <>{children}</>;
 }

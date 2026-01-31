@@ -1,145 +1,158 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import RequireAuth from "../lib/requireAuth";
+import { useEffect, useState } from 'react'
+import {
+  createApplication,
+  getApplications,
+  updateApplicationStatus,
+  deleteApplication,
+} from '@/app/lib/db/applications'
 
-type Status = "Applied" | "Interview" | "Offer";
+type Status = 'applied' | 'interview' | 'offer' | 'rejected'
 
 type Application = {
-  id: string;
-  company: string;
-  role: string;
-  status: Status;
-};
+  id: string
+  company: string
+  job_title: string
+  status: Status
+}
 
 export default function ApplicationsPage() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [company, setCompany] = useState("");
-  const [role, setRole] = useState("");
-  const [status, setStatus] = useState<Status>("Applied");
+  const [apps, setApps] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
+  const [adding, setAdding] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // Load apps
+  // form state
+  const [showForm, setShowForm] = useState(false)
+  const [company, setCompany] = useState('')
+  const [jobTitle, setJobTitle] = useState('')
+
+  // READ
   useEffect(() => {
-    const stored = localStorage.getItem("trackly_apps");
-    if (stored) setApplications(JSON.parse(stored));
-  }, []);
+    getApplications()
+      .then(setApps)
+      .catch(() => setError('Failed to load applications'))
+      .finally(() => setLoading(false))
+  }, [])
 
-  // Save apps
-  useEffect(() => {
-    localStorage.setItem("trackly_apps", JSON.stringify(applications));
-  }, [applications]);
+  // CREATE
+  async function handleCreate() {
+    if (!company || !jobTitle) return
 
-  const addApplication = () => {
-    if (!company || !role) return;
+    try {
+      setAdding(true)
+      setError(null)
 
-    setApplications([
-      ...applications,
-      {
-        id: crypto.randomUUID(),
+      const newApp = await createApplication({
         company,
-        role,
-        status,
-      },
-    ]);
+        job_title: jobTitle,
+      })
 
-    setCompany("");
-    setRole("");
-    setStatus("Applied");
-  };
+      setApps(prev => [newApp, ...prev])
+      setCompany('')
+      setJobTitle('')
+      setShowForm(false)
+    } catch {
+      setError('Failed to add application')
+    } finally {
+      setAdding(false)
+    }
+  }
 
-  const deleteApplication = (id: string) => {
-    setApplications(applications.filter(app => app.id !== id));
-  };
-
-  const updateStatus = (id: string, newStatus: Status) => {
-    setApplications(
-      applications.map(app =>
-        app.id === id ? { ...app, status: newStatus } : app
+  // UPDATE
+  async function handleStatusChange(id: string, status: Status) {
+    try {
+      await updateApplicationStatus(id, status)
+      setApps(prev =>
+        prev.map(app =>
+          app.id === id ? { ...app, status } : app
+        )
       )
-    );
-  };
+    } catch {
+      setError('Failed to update status')
+    }
+  }
+
+  // DELETE
+  async function handleDelete(id: string) {
+    try {
+      await deleteApplication(id)
+      setApps(prev => prev.filter(app => app.id !== id))
+    } catch {
+      setError('Failed to delete application')
+    }
+  }
+
+  if (loading) return <p>Loading applications…</p>
 
   return (
-    <RequireAuth>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Applications</h1>
+    <div>
+      <h1>Applications</h1>
 
-        {/* Add Application */}
-        <div className="bg-white p-4 rounded-xl shadow-sm flex gap-4">
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <button onClick={() => setShowForm(true)}>
+        Add application
+      </button>
+
+      {showForm && (
+        <div style={{ margin: '16px 0' }}>
           <input
-            className="border p-2 rounded-lg flex-1"
             placeholder="Company"
             value={company}
             onChange={e => setCompany(e.target.value)}
           />
+
           <input
-            className="border p-2 rounded-lg flex-1"
-            placeholder="Role"
-            value={role}
-            onChange={e => setRole(e.target.value)}
+            placeholder="Job title"
+            value={jobTitle}
+            onChange={e => setJobTitle(e.target.value)}
           />
-          <select
-            className="border p-2 rounded-lg"
-            value={status}
-            onChange={e => setStatus(e.target.value as Status)}
-          >
-            <option>Applied</option>
-            <option>Interview</option>
-            <option>Offer</option>
-          </select>
-          <button
-            onClick={addApplication}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-lg"
-          >
-            Add
+
+          <button onClick={handleCreate} disabled={adding}>
+            {adding ? 'Saving…' : 'Save'}
+          </button>
+
+          <button onClick={() => setShowForm(false)}>
+            Cancel
           </button>
         </div>
+      )}
 
-        {/* List */}
-        {applications.length === 0 && (
-          <p className="text-gray-500">No applications yet.</p>
-        )}
+      {apps.length === 0 ? (
+        <p>
+          No applications yet. <br />
+          Click <strong>Add application</strong> to get started.
+        </p>
+      ) : (
+        <ul>
+          {apps.map(app => (
+            <li key={app.id} style={{ marginBottom: 12 }}>
+              <strong>{app.company}</strong> — {app.job_title}
 
-        <div className="space-y-3">
-          {applications.map(app => (
-            <div
-              key={app.id}
-              className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition flex justify-between items-center"
-            >
-              <div>
-                <p className="font-semibold">{app.company}</p>
-                <p className="text-sm text-gray-600 mb-1">{app.role}</p>
-
-                {/* Status dropdown */}
-                <select
-                  value={app.status}
-                  onChange={e =>
-                    updateStatus(app.id, e.target.value as Status)
-                  }
-                  className={`border px-2 py-1 rounded-lg text-sm font-medium ${
-                    app.status === "Applied"
-                      ? "bg-blue-50 text-blue-700"
-                      : app.status === "Interview"
-                      ? "bg-yellow-50 text-yellow-700"
-                      : "bg-green-50 text-green-700"
-                  }`}
-                >
-                  <option>Applied</option>
-                  <option>Interview</option>
-                  <option>Offer</option>
-                </select>
-              </div>
-
-              <button
-                onClick={() => deleteApplication(app.id)}
-                className="text-red-600 hover:underline"
+              <select
+                value={app.status}
+                onChange={e =>
+                  handleStatusChange(
+                    app.id,
+                    e.target.value as Status
+                  )
+                }
               >
+                <option value="applied">Applied</option>
+                <option value="interview">Interview</option>
+                <option value="offer">Offer</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <button onClick={() => handleDelete(app.id)}>
                 Delete
               </button>
-            </div>
+            </li>
           ))}
-        </div>
-      </div>
-    </RequireAuth>
-  );
+        </ul>
+      )}
+    </div>
+  )
 }

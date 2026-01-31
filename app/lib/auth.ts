@@ -1,12 +1,6 @@
-export const isLoggedIn = () => {
-  if (typeof window === "undefined") return false;
-  return localStorage.getItem("trackly_auth") === "true";
-};
+import { supabase } from './supabase'
 
-export const login = () => {
-  localStorage.setItem("trackly_auth", "true");
-};
-
-export const logout = () => {
-  localStorage.removeItem("trackly_auth");
-};
+export async function signOut() {
+  const { error } = await supabase.auth.signOut()
+  if (error) throw error
+}
