@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import UserMenu from "./components/UserMenu";
+import TopBar from "./components/topbar";
 
 export default function RootLayout({
   children,
@@ -15,24 +15,15 @@ export default function RootLayout({
           <aside className="w-64 p-6 border-r border-white/10 hidden md:block">
             <h1 className="text-xl font-bold mb-8">Trackly</h1>
             <nav className="space-y-4 text-sm">
-              <Link href="/dashboard" className="block hover:text-[color:var(--accent)]">
-                Dashboard
-              </Link>
-              <Link href="/applications" className="block hover:text-[color:var(--accent)]">
-                Applications
-              </Link>
-              <Link href="/analyze" className="block hover:text-[color:var(--accent)]">
-                Resume Analyzer
-              </Link>
+              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/applications">Applications</Link>
+              <Link href="/analyze">Resume Analyzer</Link>
             </nav>
           </aside>
 
           {/* Main */}
           <main className="flex-1 p-6 md:p-10">
-            <div className="flex justify-end mb-6">
-              <UserMenu />
-            </div>
-
+            <TopBar />
             {children}
           </main>
         </div>
