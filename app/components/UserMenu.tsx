@@ -20,6 +20,7 @@ export default function UserMenu() {
   return (
     <div className="flex items-center gap-4 text-sm">
       <span className="text-gray-400">{email}</span>
+
       <button
         onClick={async () => {
           await logout()
