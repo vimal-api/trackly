@@ -1,6 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
-import TopBar from "./components/topbar";
+import topbar from "./components/topbar";
 
 export default function RootLayout({
   children,
@@ -23,7 +23,7 @@ export default function RootLayout({
 
           {/* Main */}
           <main className="flex-1 p-6 md:p-10">
-            <TopBar />
+            <topbar/>
             {children}
           </main>
         </div>
