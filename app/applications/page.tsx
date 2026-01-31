@@ -6,7 +6,7 @@ import {
   getApplications,
   updateApplicationStatus,
   deleteApplication,
-} from '@/app/lib/db/applications'
+} from '../lib/db/applications'
 
 type Status = 'applied' | 'interview' | 'offer' | 'rejected'
 
