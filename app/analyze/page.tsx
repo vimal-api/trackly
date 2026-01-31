@@ -10,6 +10,10 @@ export default function AnalyzePage() {
 
   return (
     <div>
+      <p style={{ color: 'red', fontWeight: 'bold' }}>
+  DEPLOY CHECK — SHOULD SEE THIS
+</p>
+
       <h1 className="text-2xl font-semibold mb-6">Resume Analyzer</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
