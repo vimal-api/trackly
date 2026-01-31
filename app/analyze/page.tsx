@@ -1,33 +1,25 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import RequireAuth from "../lib/requireAuth";
+import { useState } from 'react'
+import { analyzeResume } from '@/app/lib/analyze/resume'
 
 export default function AnalyzePage() {
-  const [resume, setResume] = useState("");
-  const [jd, setJd] = useState("");
-  const [result, setResult] = useState<any>(null);
-
-  const analyze = async () => {
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resume, jd }),
-    });
-    setResult(await res.json());
-  };
+  const [resume, setResume] = useState('')
+  const [jd, setJd] = useState('')
+  const [result, setResult] = useState<any>(null)
 
   return (
-    <RequireAuth>
-      <h1 className="text-3xl font-bold mb-6">Resume Analyzer</h1>
+    <div>
+      <h1 className="text-2xl font-semibold mb-6">Resume Analyzer</h1>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <textarea
           className="border p-3 rounded"
           placeholder="Paste resume"
           value={resume}
           onChange={e => setResume(e.target.value)}
         />
+
         <textarea
           className="border p-3 rounded"
           placeholder="Paste job description"
@@ -37,17 +29,22 @@ export default function AnalyzePage() {
       </div>
 
       <button
-        onClick={analyze}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        onClick={() => setResult(analyzeResume(resume, jd))}
       >
         Analyze
       </button>
 
       {result && (
-        <pre className="bg-white p-4 rounded shadow mt-4">
-          {JSON.stringify(result, null, 2)}
-        </pre>
+        <div className="mt-6 border rounded p-4">
+          <p><strong>Score:</strong> {result.score}%</p>
+          <p><strong>Keyword matches:</strong> {result.keywordMatch}</p>
+          <p>
+            <strong>Missing sections:</strong>{' '}
+            {result.missingSections.join(', ') || 'None'}
+          </p>
+        </div>
       )}
-    </RequireAuth>
-  );
+    </div>
+  )
 }
