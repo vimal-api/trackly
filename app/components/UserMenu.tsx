@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { logout } from '../lib/auth'
+import { signOut } from '../lib/auth'
 import { useRouter } from 'next/navigation'
 
 export default function UserMenu() {
@@ -22,14 +22,15 @@ export default function UserMenu() {
       <span className="text-gray-400">{email}</span>
 
       <button
-        onClick={async () => {
-          await logout()
-          router.push('/login')
-        }}
-        className="text-red-400 hover:text-red-500"
-      >
-        Logout
-      </button>
-    </div>
+  onClick={async () => {
+    await signOut()
+    router.push('/login')
+  }}
+  className="text-red-400 hover:text-red-500"
+>
+  Logout
+</button>
+
+    </div>  
   )
 }
